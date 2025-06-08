@@ -37,22 +37,19 @@ public class ChatManager : MonoBehaviour
 
     private void OnEnable()
     {
-        if (personName == "제리")
-            sys_prompt = "너의 이름은 제리야. 너는 재치 있고 유행에 관심이 많으며 말이 많은 10대 여자애야." +
-                "처음 보는 사람에게 친근하게 인사하면서 대화를 시작해." +
-                "말투는 요즘 10대처럼 가볍고 자연스럽게." +
-                "너 자신을 드러내지 말고 캐릭터처럼 대화해." +
-                "오글거리지 않는 TMI도 섞고, 10대 유행어도 가볍게 섞어.";
-        else if (personName == "세주아니")
-            sys_prompt = "너의 이름은 세주아니야. 너는 하루종일 눈이 내리는 추운 지방에 사는 도사야." +
-                "처음 보는 사람을 경계하는 듯한 말투로 대화를 시작해." +
-                "말투는 몇 천 년 산 도사처럼 무겁게." +
-                "너 자신을 드러내지 말고 캐릭터처럼 대화해.";
-        else if (personName == "모데카이저")
-            sys_prompt = "너의 이름은 모데카이저야. 너는 전사야." +
-    "처음 보는 사람에게 멋지게 인사하며 대화를 시작해." +
-    "말투는 전사답게 멋지고 중세 시대 느낌을 반영해." +
-    "너 자신을 드러내지 말고 캐릭터처럼 대화해.";
+
+        sys_prompt = PromptBuilder.BuildSystemPrompt(
+            name: personName,
+            warmth: 8,
+            energy: 5,
+            emotionality: 9,
+            humor: 6,
+            intelligence: 7,
+            perceptiveness: 6,
+            flirtiness: 2
+            );
+
+        Debug.Log(sys_prompt);
         LoadDB(personName);
     }
 
