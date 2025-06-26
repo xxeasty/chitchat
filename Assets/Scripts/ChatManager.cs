@@ -29,9 +29,6 @@ public class ChatManager : MonoBehaviour
     string recent_chat_botId = "";
     private string sys_prompt;
 
-    private string apiKey = "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";
-    private string endpoint = "https://api.openai.com/v1/chat/completions";
-
     void Awake()
     {
         db = FirebaseFirestore.DefaultInstance;
@@ -41,129 +38,20 @@ public class ChatManager : MonoBehaviour
     private void OnEnable()
     {
 
+        // unreadCount만 0으로 초기화하는 건 유지
         DocumentReference botDoc = db.Collection("users")
                                      .Document(auth.CurrentUser.UserId)
                                      .Collection("bots")
                                      .Document(botId);
 
         Dictionary<string, object> updateData = new Dictionary<string, object>
-        {
-            { "unreadCount", 0 }
-        };
-
-        botDoc.UpdateAsync(updateData).ContinueWithOnMainThread(task => {
-            if (task.IsCompleted)
-            {
-                Debug.Log("unreadCount Update");
-            }
-            else
-            {
-                Debug.LogError("unreadCount Update Error: " + task.Exception);
-            }
-        });
-
-        db.Collection("users")
-            .Document(auth.CurrentUser.UserId)
-            .Collection("bots")
-            .Document(botId)
-            .GetSnapshotAsync()
-            .ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCompleted && !task.IsFaulted)
-                {
-                    DocumentSnapshot snapshot = task.Result;
-                    if (snapshot.Exists)
-                    {
-                        var personality = snapshot.GetValue<Dictionary<string, object>>("personality");
-                        sys_prompt = PromptBuilder.BuildSystemPrompt(
-                            name: snapshot.GetValue<string>("nickname"),
-                            title: snapshot.GetValue<string>("title"),
-                            description: snapshot.GetValue<string>("description"),
-                            affinity: Convert.ToInt32(personality["affinity"]),
-                            energy: Convert.ToInt32(personality["energy"]),
-                            emotionality: Convert.ToInt32(personality["emotionality"]),
-                            humor: Convert.ToInt32(personality["humor"]),
-                            tone: Convert.ToInt32(personality["tone"]),
-                            perceptiveness: Convert.ToInt32(personality["perceptiveness"]),
-                            flirtiness: Convert.ToInt32(personality["flirtiness"]),
-                            extra: string.Join("\n- ", personality["extra"] as List<object>)
-                        );
-                    }
-                }
-            });
-        LoadDB(botId);
-    }
-
-    IEnumerator SendOpenAIRequest(string prompt)
     {
-
-        List<Dictionary<string, string>> messages = new List<Dictionary<string, string>>();
-        BuildPrompt(messages, prompt);
-
-        var requestData = new Dictionary<string, object> {
-        { "model", "gpt-4o" },
-        { "temperature", 0.85 },
-        { "messages", messages }
+        { "unreadCount", 0 }
     };
 
-        string jsonBody = JsonConvert.SerializeObject(requestData);
-        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
+        botDoc.UpdateAsync(updateData);
 
-        UnityWebRequest request = new UnityWebRequest(endpoint, "POST");
-        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
-        request.downloadHandler = new DownloadHandlerBuffer();
-        request.SetRequestHeader("Content-Type", "application/json");
-        request.SetRequestHeader("Authorization", "Bearer " + apiKey);
-
-        yield return request.SendWebRequest();
-
-        if (request.result != UnityWebRequest.Result.Success)
-        {
-            Debug.Log("API Error: " + request.error);
-        }
-        else
-        {
-            string result = request.downloadHandler.text;
-            string parsedText = ParseResponse(result);
-            GameObject bubble = Instantiate(message_ai, content);
-            bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = parsedText;
-            SendDB(parsedText, false);
-            StartCoroutine(Refresh());
-        }
-    }
-
-    private void BuildPrompt(List<Dictionary<string, string>> messages, string prompt)
-    {
-        if (recent_chat_botId != botId)
-        {
-            messages.Add(new Dictionary<string, string> {
-            { "role", "system" },
-            { "content", sys_prompt }
-        });
-        }
-
-        int total = content.childCount;
-        int maxCount = Mathf.Min(7, total);
-
-        for (int i = total - maxCount; i < total; i++)
-        {
-            Transform child = content.GetChild(i);
-            string role = "";
-
-            if (child.tag == "user") role = "user";
-            else if (child.tag == "bot") role = "assistant";
-            else continue;
-
-            TMP_Text text = child.GetComponentInChildren<TMP_Text>();
-            if (text == null) continue;
-
-            messages.Add(new Dictionary<string, string> {
-                { "role", role },
-                { "content", text.text }
-            });
-        }
-        //messages.ForEach(m => Debug.Log(m["content"]));
-        recent_chat_botId = botId;
+        LoadDB(botId);
     }
 
     IEnumerator Refresh()
@@ -181,12 +69,53 @@ public class ChatManager : MonoBehaviour
 
     public void SendMessage()
     {
+        string userText = textInput.text;
+
         GameObject bubble = Instantiate(message_user, content);
-        bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = textInput.text;
+        bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = userText;
         StartCoroutine(Refresh());
-        StartCoroutine(SendOpenAIRequest(textInput.text));
-        SendDB(textInput.text, true);
+        SendDB(userText, true);
+
         inputMessage.text = "";
+
+        StartCoroutine(GetBotResponse(userText));
+    }
+
+    IEnumerator GetBotResponse(string userMessage)
+    {
+        string url = "https://us-central1-chitchat-bdd22.cloudfunctions.net/chatWithBot";
+
+        Dictionary<string, string> postData = new Dictionary<string, string>
+    {
+        { "botId", botId },
+        { "userId", auth.CurrentUser.UserId },
+        { "message", userMessage }
+    };
+
+        string jsonBody = JsonConvert.SerializeObject(postData);
+        byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
+
+        UnityWebRequest request = new UnityWebRequest(url, "POST");
+        request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+        request.downloadHandler = new DownloadHandlerBuffer();
+        request.SetRequestHeader("Content-Type", "application/json");
+
+        yield return request.SendWebRequest();
+
+        if (request.result != UnityWebRequest.Result.Success)
+        {
+            Debug.LogError("chatWithBot API Error: " + request.error);
+            yield break;
+        }
+
+        string resultJson = request.downloadHandler.text;
+        string parsedText = JSON.Parse(resultJson)["result"];
+        Debug.Log("GPT 응답: " + parsedText);
+
+        GameObject bubble = Instantiate(message_ai, content);
+        bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = parsedText;
+        SendDB(parsedText, false);
+        StartCoroutine(Refresh());
     }
 
     public void ExitButton()
@@ -292,6 +221,78 @@ public class ChatManager : MonoBehaviour
             });
         }
     }
-
-
 }
+
+/*
+ IEnumerator SendOpenAIRequest(string prompt)
+ {
+
+     List<Dictionary<string, string>> messages = new List<Dictionary<string, string>>();
+     BuildPrompt(messages, prompt);
+
+     var requestData = new Dictionary<string, object> {
+     { "model", "gpt-4o" },
+     { "temperature", 0.85 },
+     { "messages", messages }
+ };
+
+     string jsonBody = JsonConvert.SerializeObject(requestData);
+     byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
+
+     UnityWebRequest request = new UnityWebRequest(endpoint, "POST");
+     request.uploadHandler = new UploadHandlerRaw(bodyRaw);
+     request.downloadHandler = new DownloadHandlerBuffer();
+     request.SetRequestHeader("Content-Type", "application/json");
+     request.SetRequestHeader("Authorization", "Bearer " + apiKey);
+
+     yield return request.SendWebRequest();
+
+     if (request.result != UnityWebRequest.Result.Success)
+     {
+         Debug.Log("API Error: " + request.error);
+     }
+     else
+     {
+         string result = request.downloadHandler.text;
+         string parsedText = ParseResponse(result);
+         GameObject bubble = Instantiate(message_ai, content);
+         bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = parsedText;
+         SendDB(parsedText, false);
+         StartCoroutine(Refresh());
+     }
+ }
+
+ private void BuildPrompt(List<Dictionary<string, string>> messages, string prompt)
+ {
+     if (recent_chat_botId != botId)
+     {
+         messages.Add(new Dictionary<string, string> {
+         { "role", "system" },
+         { "content", sys_prompt }
+     });
+     }
+
+     int total = content.childCount;
+     int maxCount = Mathf.Min(7, total);
+
+     for (int i = total - maxCount; i < total; i++)
+     {
+         Transform child = content.GetChild(i);
+         string role = "";
+
+         if (child.tag == "user") role = "user";
+         else if (child.tag == "bot") role = "assistant";
+         else continue;
+
+         TMP_Text text = child.GetComponentInChildren<TMP_Text>();
+         if (text == null) continue;
+
+         messages.Add(new Dictionary<string, string> {
+             { "role", role },
+             { "content", text.text }
+         });
+     }
+     //messages.ForEach(m => Debug.Log(m["content"]));
+     recent_chat_botId = botId;
+ }
+ */

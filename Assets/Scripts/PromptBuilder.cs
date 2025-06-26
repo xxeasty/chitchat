@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 
+//백엔드에서 처리할 예정이므로 사용하지 않음
 public static class PromptBuilder
 {
     public static string BuildSystemPrompt(

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 
+//gpt에게 직접 수치를 제공하기로 했으므로 이제 사용하지 않음
 public static class PersonalityPromptData
 {
     public static readonly Dictionary<int, string> Warmth = new()
