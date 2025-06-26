@@ -148,7 +148,7 @@ public class FriendRecommendManager : MonoBehaviour
     {
         logText.text = "친구를 찾고 있습니다..";
 
-        string url = "https://us-central1-chitchat-bdd22.cloudfunctions.net/recommendBot";
+        string url = "https://recommendbot-oupagmtrea-uc.a.run.app";
 
         UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
         request.downloadHandler = new DownloadHandlerBuffer();

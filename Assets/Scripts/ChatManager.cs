@@ -26,8 +26,6 @@ public class ChatManager : MonoBehaviour
     public TMP_Text inputMessage;
 
     public string botId;
-    string recent_chat_botId = "";
-    private string sys_prompt;
 
     void Awake()
     {
@@ -37,8 +35,6 @@ public class ChatManager : MonoBehaviour
 
     private void OnEnable()
     {
-
-        // unreadCount만 0으로 초기화하는 건 유지
         DocumentReference botDoc = db.Collection("users")
                                      .Document(auth.CurrentUser.UserId)
                                      .Collection("bots")
@@ -61,12 +57,6 @@ public class ChatManager : MonoBehaviour
         scrollRect.verticalNormalizedPosition = 0f;
     }
     
-    string ParseResponse(string json)
-    {
-        var data = JSON.Parse(json);
-        return data["choices"][0]["message"]["content"];
-    }
-
     public void SendMessage()
     {
         string userText = textInput.text;
@@ -83,7 +73,7 @@ public class ChatManager : MonoBehaviour
 
     IEnumerator GetBotResponse(string userMessage)
     {
-        string url = "https://us-central1-chitchat-bdd22.cloudfunctions.net/chatWithBot";
+        string url = "https://chatwithbot-oupagmtrea-uc.a.run.app";
 
         Dictionary<string, string> postData = new Dictionary<string, string>
     {
