@@ -9,7 +9,6 @@ using UnityEngine.UI;
 using Firebase.Firestore;
 using Firebase.Extensions;
 using System.Collections.Generic;
-using System;
 using Firebase.Auth;
 
 public class ChatManager : MonoBehaviour
@@ -59,13 +58,15 @@ public class ChatManager : MonoBehaviour
     
     public void SendMessage()
     {
+
         string userText = textInput.text;
 
         GameObject bubble = Instantiate(message_user, content);
-        bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = userText;
+        bubble.GetComponentInChildren<TMP_Text>().text = userText;
+        bubble.GetComponent<MessageBubble>().Init();
+        bubble.transform.GetComponent<MessageFeedbackAnimator>().enabled = true;
+        SendDB(userText, true, bubble);
         StartCoroutine(Refresh());
-        SendDB(userText, true);
-
         inputMessage.text = "";
 
         StartCoroutine(GetBotResponse(userText));
@@ -104,7 +105,8 @@ public class ChatManager : MonoBehaviour
 
         GameObject bubble = Instantiate(message_ai, content);
         bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = parsedText;
-        SendDB(parsedText, false);
+        bubble.transform.GetComponent<MessageBubble>().Init();
+        SendDB(parsedText, false, bubble);
         StartCoroutine(Refresh());
     }
 
@@ -144,13 +146,14 @@ public class ChatManager : MonoBehaviour
                         else
                             bubble = Instantiate(message_user, content);
 
-                        bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = data["content"].ToString();
+                        bubble.transform.GetComponentInChildren<TMP_Text>().text = data["content"].ToString();
+                        bubble.transform.GetComponent<MessageBubble>().Init();
                     }
                 }
             });
     }
 
-    private void SendDB(string chatContent, bool isUser)
+    private void SendDB(string chatContent, bool isUser, GameObject bubble)
     {
         DocumentReference messageRef = db.Collection("users")
                                  .Document(auth.CurrentUser.UserId)
@@ -159,8 +162,12 @@ public class ChatManager : MonoBehaviour
                                  .Collection("messages")
                                  .Document();
 
+        if (isUser)
+            bubble.transform.GetComponent<MessageFeedbackAnimator>().Init(auth.CurrentUser.UserId, botId, messageRef.Id);
+
         Dictionary<string, object> messageData = null;
-        if (isUser) {
+        if (isUser)
+        {
             messageData = new Dictionary<string, object>
         {
             { "sender", "user" },

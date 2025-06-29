@@ -38,8 +38,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 820.435, y: -10}
-  m_SizeDelta: {x: 445.13, y: 0}
+  m_AnchoredPosition: {x: 1018, y: -10}
+  m_SizeDelta: {x: 50, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &8038509911735222944
 CanvasRenderer:
@@ -175,7 +175,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 222.565, y: -20.11}
+  m_AnchoredPosition: {x: 41, y: -0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7916878534771472614
@@ -208,8 +208,8 @@ MonoBehaviour:
       m_Calls: []
   m_text: 
   m_isRightToLeft: 0
-  m_fontAsset: {fileID: 11400000, guid: 6fc8bf17ff701b745aa2d7b8be87e1b6, type: 2}
-  m_sharedMaterial: {fileID: 2570200364308975081, guid: 6fc8bf17ff701b745aa2d7b8be87e1b6, type: 2}
+  m_fontAsset: {fileID: 11400000, guid: e1ecd887b6db94168bdb66728870daf6, type: 2}
+  m_sharedMaterial: {fileID: 1916370327128812356, guid: e1ecd887b6db94168bdb66728870daf6, type: 2}
   m_fontSharedMaterials: []
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
@@ -322,6 +322,7 @@ GameObject:
   - component: {fileID: 7362054783274761714}
   - component: {fileID: 4562221007438508090}
   - component: {fileID: 4788909395525668674}
+  - component: {fileID: 8925933842839251849}
   m_Layer: 5
   m_Name: Message_user
   m_TagString: user
@@ -426,3 +427,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxWidth: 800
+--- !u!114 &8925933842839251849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7403032627470368808}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9247e55795978544a01867463e871bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  messageText: {fileID: 3842225420993203525}
+  flyingTextPrefab: {fileID: 8935486584362654408, guid: 5fe36ff76c43ef84c927f146c0f015e6, type: 3}
+  _userId: 
+  _botId: 
+  _messageId: 

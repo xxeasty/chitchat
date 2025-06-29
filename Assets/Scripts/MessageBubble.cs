@@ -1,18 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class MessageBubble : MonoBehaviour
 {
 
-    public float maxWidth = 1300f;
+    public float maxWidth = 4.5f;
 
-    // Start is called before the first frame update
-    void Start()
+    public void Init()
     {
         StartCoroutine(AdjustTextWidth());
-    }
+    }        
 
     IEnumerator AdjustTextWidth()
     {
@@ -24,8 +23,7 @@ public class MessageBubble : MonoBehaviour
 
         if (width > maxWidth)
         {
-            transform.GetChild(0).GetChild(0).GetComponent<LayoutElement>().preferredWidth = maxWidth;
-            transform.GetChild(0).GetComponent<LayoutElement>().preferredWidth = maxWidth;
+            transform.GetComponentInChildren<LayoutElement>().preferredWidth = maxWidth;
             //rt.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, maxWidth);
         }
         else
@@ -34,7 +32,6 @@ public class MessageBubble : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
     void Update()
     {
         

@@ -5,7 +5,7 @@ using UnityEngine;
 public class PageManager : MonoBehaviour
 {
 
-    public GameObject homePanel, chatPanel, friendPanel, eduPanel;
+    public GameObject homePanel, chatPanel, chatPanel_world, friendPanel, eduPanel;
 
     private int page = 2;
 
@@ -13,7 +13,10 @@ public class PageManager : MonoBehaviour
     {
         if (page != 1) {
             if (page == 2)
+            {
                 chatPanel.SetActive(false);
+                chatPanel_world.SetActive(false);
+            }
             if (page == 3)
                 friendPanel.SetActive(false);
             if (page == 4)
@@ -34,6 +37,7 @@ public class PageManager : MonoBehaviour
             if (page == 4)
                 eduPanel.SetActive(false);
             chatPanel.SetActive(true);
+            chatPanel_world.SetActive(true);
             page = 2;
         }
     }
@@ -45,7 +49,10 @@ public class PageManager : MonoBehaviour
             if (page == 1)
                 homePanel.SetActive(false);
             if (page == 2)
+            {
                 chatPanel.SetActive(false);
+                chatPanel_world.SetActive(false);
+            }
             if (page == 4)
                 eduPanel.SetActive(false);
             friendPanel.SetActive(true);
@@ -61,7 +68,10 @@ public class PageManager : MonoBehaviour
             if (page == 1)
                 homePanel.SetActive(false);
             if (page == 2)
+            {
                 chatPanel.SetActive(false);
+                chatPanel_world.SetActive(false);
+            }
             if (page == 3)
                 friendPanel.SetActive(false);
             eduPanel.SetActive(true);
