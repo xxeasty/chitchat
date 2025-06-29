@@ -1,82 +1,49 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+using TMPro;
 
 public class PageManager : MonoBehaviour
 {
 
-    public GameObject homePanel, chatPanel, chatPanel_world, friendPanel, eduPanel;
+    public GameObject[] pages;
+    public TMP_Text topBar_text;
+    GameObject previousBtn = null;
 
-    private int page = 2;
+    public int page = 0;
 
-    public void HomeClicked()
+    public void ChangeSpriteColor()
     {
-        if (page != 1) {
-            if (page == 2)
-            {
-                chatPanel.SetActive(false);
-                chatPanel_world.SetActive(false);
-            }
-            if (page == 3)
-                friendPanel.SetActive(false);
-            if (page == 4)
-                eduPanel.SetActive(false);
-            homePanel.SetActive(true);
-            page = 1;
+
+        if (previousBtn != null)
+        {
+            previousBtn.GetComponent<Image>().color = new Color(255f, 255f, 255f);
+            previousBtn.transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(183f, 183f, 183f);
         }
+
+        GameObject clicked = EventSystem.current.currentSelectedGameObject;
+        previousBtn = clicked;
+        clicked.GetComponent<Image>().color = new Color(102f, 126f, 234f);
+        clicked.transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(102f, 126f, 234f);
+
     }
 
-    public void ChatClicked()
+    public void ShowPage(int pageIndex)
     {
-        if (page != 2)
+        for (int i = 0; i < pages.Length; i++)
         {
-            if (page == 1)
-                homePanel.SetActive(false);
-            if (page == 3)
-                friendPanel.SetActive(false);
-            if (page == 4)
-                eduPanel.SetActive(false);
-            chatPanel.SetActive(true);
-            chatPanel_world.SetActive(true);
-            page = 2;
+            pages[i].SetActive(i == pageIndex);
         }
-    }
+        if (pageIndex == 0)
+            topBar_text.text = "ChitChat";
+        else if (pageIndex == 1)
+            topBar_text.text = "³» Æê";
+        else if (pageIndex == 2)
+            topBar_text.text = "Äù½ºÆ®";
 
-    public void FriendClicked()
-    {
-        if (page != 3)
-        {
-            if (page == 1)
-                homePanel.SetActive(false);
-            if (page == 2)
-            {
-                chatPanel.SetActive(false);
-                chatPanel_world.SetActive(false);
-            }
-            if (page == 4)
-                eduPanel.SetActive(false);
-            friendPanel.SetActive(true);
-            page = 3;
-        }
-    }
-
-
-    public void EduClicked()
-    {
-        if (page != 4)
-        {
-            if (page == 1)
-                homePanel.SetActive(false);
-            if (page == 2)
-            {
-                chatPanel.SetActive(false);
-                chatPanel_world.SetActive(false);
-            }
-            if (page == 3)
-                friendPanel.SetActive(false);
-            eduPanel.SetActive(true);
-            page = 4;
-        }
+        page = pageIndex;
     }
 
 }
