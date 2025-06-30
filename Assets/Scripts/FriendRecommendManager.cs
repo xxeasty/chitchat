@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Newtonsoft.Json;
 using UnityEngine.Networking;
-using System.Text;
+using UnityEngine.UI;
 using SimpleJSON;
 using TMPro;
 using Firebase.Firestore;
@@ -36,6 +36,7 @@ public class Behavior
 public class ChatbotProfile
 {
     public string name;
+    public int age;
     public string title;
     public string description;
     public Personality personality;
@@ -47,13 +48,15 @@ public class FriendRecommendManager : MonoBehaviour
 
     FirebaseFirestore db;
 
-    public TMP_Text logText;
+    public Text botName_text, botAge_text, botTitle_text, botDescription_text;
+    public Slider energy_slider, emotionality_slider, humor_slider, tone_slider, perceptiveness_slider, flirtiness_slider;
     public ChatListManager chatListManager;
 
     FirebaseAuth auth;
 
     [Header("Meta Info")]
     public string botName;
+    public int botAge;
     public string botTitle;
     public string botDescription;
     public string botId;
@@ -121,6 +124,7 @@ public class FriendRecommendManager : MonoBehaviour
         profileData = new Dictionary<string, object>
         {
             { "nickname", botName },
+            { "age", botAge },
             { "title", botTitle },
             { "description", botDescription },
             { "addedAt", FieldValue.ServerTimestamp },
@@ -133,7 +137,7 @@ public class FriendRecommendManager : MonoBehaviour
         profileRef.SetAsync(profileData).ContinueWithOnMainThread(task => {
             if (task.IsCompleted)
             {
-                logText.text = botName + "와 친구가 되었습니다!\n채팅 목록으로 이동하여 이야기를 나눠보세요.\n새로운 친구를 찾으려면 새로고침해주세요.";
+                botTitle_text.text = botName + "과 친구 완료!";
                 chatListManager.LoadBots();
                 Debug.Log("Profile sent.");
             }
@@ -146,8 +150,7 @@ public class FriendRecommendManager : MonoBehaviour
 
     IEnumerator SendOpenAIRequest()
     {
-        logText.text = "친구를 찾고 있습니다..";
-
+        botName_text.text = "친구를 찾고 있습니다...";
         string url = "https://recommendbot-oupagmtrea-uc.a.run.app";
 
         UnityWebRequest request = UnityWebRequest.PostWwwForm(url, "");
@@ -168,6 +171,7 @@ public class FriendRecommendManager : MonoBehaviour
         ChatbotProfile profile = JsonConvert.DeserializeObject<ChatbotProfile>(parsedText);
 
         botName = profile.name;
+        botAge = profile.age;
         botTitle = profile.title;
         botDescription = profile.description;
 
@@ -187,20 +191,17 @@ public class FriendRecommendManager : MonoBehaviour
 
         botId = BotIdGenerator.GenerateBotId(botName);
 
-        logText.text =
-            $"{botName} - {botTitle}\n" +
-            $"특징: {botDescription}\n\n" +
+        botName_text.text = botName;
+        botAge_text.text = botAge.ToString() + "세";
+        energy_slider.value = energy;
+        emotionality_slider.value = emotionality;
+        humor_slider.value = humor;
+        tone_slider.value = tone;
+        perceptiveness_slider.value = perceptiveness;
+        flirtiness_slider.value = flirtiness;
 
-            $"-- 성격 --\n" +
-            $"관심사 및 기타 정보: {string.Join(", ", extra)}\n" +
-            $"친밀도: {affinity}\n외향성: {energy}\n감정적: {emotionality}\n" +
-            $"유머: {humor}\n다정함: {tone}\n세심함: {perceptiveness}\n연애 상대♥: {flirtiness}\n\n" +
-
-            $"-- 행동 특성 (오프라인일 때) --\n" +
-            $"말하는 빈도: {talkFrequency}\n" +
-            $"무답장이어도 말 거는 빈도: {persistence}\n" +
-            $"주 활동 시간대: {string.Join(", ", preferredTime)}\n" +
-            $"시간대 선호 일관성: {consistency}";
+        botTitle_text.text = botTitle;
+        botDescription_text.text = botDescription;
     }
 
 }

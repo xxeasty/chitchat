@@ -9,24 +9,22 @@ public class PageManager : MonoBehaviour
 {
 
     public GameObject[] pages;
-    public TMP_Text topBar_text;
-    GameObject previousBtn = null;
+    public GameObject onBoarding, bottomBar;
+    public Text topBar_text;
+    public GameObject previousBtn;
 
     public int page = 0;
 
     public void ChangeSpriteColor()
     {
 
-        if (previousBtn != null)
-        {
-            previousBtn.GetComponent<Image>().color = new Color(255f, 255f, 255f);
-            previousBtn.transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(183f, 183f, 183f);
-        }
+        previousBtn.GetComponent<Image>().color = new Color(255 / 255f, 255 / 255f, 255 / 255f);
+        previousBtn.transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(183 / 255f, 183 / 255f, 183 / 255f);
 
         GameObject clicked = EventSystem.current.currentSelectedGameObject;
         previousBtn = clicked;
-        clicked.GetComponent<Image>().color = new Color(102f, 126f, 234f);
-        clicked.transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(102f, 126f, 234f);
+        clicked.GetComponent<Image>().color = new Color(102 / 255f, 126 / 255f, 234 / 255f);
+        clicked.transform.GetChild(0).GetComponent<TMP_Text>().color = new Color(102 / 255f, 126 / 255f, 234 / 255f);
 
     }
 
@@ -44,6 +42,18 @@ public class PageManager : MonoBehaviour
             topBar_text.text = "Äù½ºÆ®";
 
         page = pageIndex;
+    }
+
+    public void showOnBoarding()
+    {
+        onBoarding.SetActive(true);
+        bottomBar.SetActive(false);
+    }
+
+    public void onBoardingBack()
+    {
+        onBoarding.SetActive(false);
+        bottomBar.SetActive(true);
     }
 
 }
