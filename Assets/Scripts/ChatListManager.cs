@@ -14,7 +14,7 @@ using System;
 public class ChatListManager : MonoBehaviour
 {
 
-    public GameObject inChatPanel, inChatWorld, homePanel, bottomBar;
+    public GameObject inChatPanel, inChatWorld, backGround, homePanel, bottomBar;
     public ChatManager chatManager;
 
     public GameObject chatBtn;
@@ -78,8 +78,8 @@ public class ChatListManager : MonoBehaviour
 
                 btn.GetComponent<UnityEngine.UI.Button>().onClick.AddListener(() =>
                 {
-                    bottomBar.SetActive(false);
                     chatManager.botId = bot.BotId;
+                    chatManager.nickname = bot.Nickname;
                     ChatEnter();
                 });
             }
@@ -90,8 +90,9 @@ public class ChatListManager : MonoBehaviour
     {
         inChatPanel.SetActive(true);
         inChatWorld.SetActive(true);
+        backGround.SetActive(false);
         homePanel.SetActive(false);
+        bottomBar.SetActive(false);
     }
-
 
 }

@@ -17,7 +17,7 @@ public class MessageBubble : MonoBehaviour
     {
         yield return null;
 
-        RectTransform rt = transform.GetChild(0).GetChild(0).GetComponent<RectTransform>();
+        RectTransform rt = transform.GetChild(0).GetComponent<RectTransform>();
 
         float width = rt.rect.width;
 

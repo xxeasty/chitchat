@@ -18,13 +18,16 @@ public class ChatManager : MonoBehaviour
     FirebaseAuth auth;
 
     public GameObject message_ai, message_user;
-    public GameObject chatPanel, chatListPanel, bottomBar;
+    public GameObject inChatPanel, inChatWorld, homePanel, bottomBar, backGround;
+    public Transform user_pivot, ai_pivot;
     public TMP_InputField textInput;
-    public Transform content;
-    public ScrollRect scrollRect;
-    public TMP_Text inputMessage;
+    public Text nickname_text;
+    public Transform bubbleList;
 
-    public string botId;
+    public string botId, nickname;
+
+    private List<RectTransform> allBubbles = new List<RectTransform>();
+    GameObject bubble;
 
     void Awake()
     {
@@ -45,31 +48,20 @@ public class ChatManager : MonoBehaviour
     };
 
         botDoc.UpdateAsync(updateData);
-
+        nickname_text.text = nickname;
         LoadDB(botId);
-    }
-
-    IEnumerator Refresh()
-    {
-        yield return null;
-        Canvas.ForceUpdateCanvases();
-        scrollRect.verticalNormalizedPosition = 0f;
     }
     
     public void SendMessage()
     {
 
         string userText = textInput.text;
-
-        GameObject bubble = Instantiate(message_user, content);
-        bubble.GetComponentInChildren<TMP_Text>().text = userText;
-        bubble.GetComponent<MessageBubble>().Init();
-        bubble.transform.GetComponent<MessageFeedbackAnimator>().enabled = true;
+        BubbleSet(userText, true);
         SendDB(userText, true, bubble);
-        StartCoroutine(Refresh());
-        inputMessage.text = "";
 
         StartCoroutine(GetBotResponse(userText));
+        textInput.text = "";
+
     }
 
     IEnumerator GetBotResponse(string userMessage)
@@ -82,7 +74,7 @@ public class ChatManager : MonoBehaviour
         { "userId", auth.CurrentUser.UserId },
         { "message", userMessage }
     };
-
+        Debug.Log(botId + auth.CurrentUser.UserId + userMessage);
         string jsonBody = JsonConvert.SerializeObject(postData);
         byte[] bodyRaw = Encoding.UTF8.GetBytes(jsonBody);
 
@@ -103,24 +95,24 @@ public class ChatManager : MonoBehaviour
         string parsedText = JSON.Parse(resultJson)["result"];
         Debug.Log("GPT ¿¿¥‰: " + parsedText);
 
-        GameObject bubble = Instantiate(message_ai, content);
-        bubble.transform.GetChild(0).GetChild(0).GetComponent<TMP_Text>().text = parsedText;
-        bubble.transform.GetComponent<MessageBubble>().Init();
+        BubbleSet(parsedText, false);
         SendDB(parsedText, false, bubble);
-        StartCoroutine(Refresh());
     }
 
     public void ExitButton()
     {
-        chatPanel.SetActive(false);
-        chatListPanel.SetActive(true);
+        inChatPanel.SetActive(false);
+        inChatWorld.SetActive(false);
+        backGround.SetActive(true);
+        homePanel.SetActive(true);
         bottomBar.SetActive(true);
-        foreach (Transform child in content)
+        foreach (Transform child in bubbleList)
             GameObject.Destroy(child.gameObject);
     }
 
     private void LoadDB(string name)
     {
+
         db.Collection("users")
         .Document(auth.CurrentUser.UserId)
         .Collection("chats")
@@ -139,18 +131,38 @@ public class ChatManager : MonoBehaviour
                     foreach (var doc in sorted)
                     {
                         var data = doc.ToDictionary();
-                        GameObject bubble;
-
-                        if (data["sender"].ToString() == "bot")
-                            bubble = Instantiate(message_ai, content);
-                        else
-                            bubble = Instantiate(message_user, content);
-
-                        bubble.transform.GetComponentInChildren<TMP_Text>().text = data["content"].ToString();
-                        bubble.transform.GetComponent<MessageBubble>().Init();
+                        bool isUser = data["sender"].ToString() != "bot";
+                        BubbleSet(data["content"].ToString(), isUser);
                     }
+
                 }
             });
+    }
+
+    private void BubbleSet(string msgContent, bool isUser) {
+
+        if (isUser)
+            bubble = Instantiate(message_user, bubbleList);
+        else
+            bubble = Instantiate(message_ai, bubbleList);
+
+        var textComponent = bubble.GetComponentInChildren<TMP_Text>();
+        textComponent.text = msgContent;
+
+        var rect = bubble.transform.GetChild(0).GetComponent<RectTransform>();
+        LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+
+        bubble.transform.position = isUser ? user_pivot.position : ai_pivot.position;
+
+        float height = rect.rect.height * bubble.transform.lossyScale.y;
+        float spacing = 0.03f;
+
+        foreach (var existing in allBubbles)
+        {
+            existing.position += new Vector3(0, height + spacing, 0);
+        }
+
+        allBubbles.Add(rect);
     }
 
     private void SendDB(string chatContent, bool isUser, GameObject bubble)
@@ -162,8 +174,8 @@ public class ChatManager : MonoBehaviour
                                  .Collection("messages")
                                  .Document();
 
-        if (isUser)
-            bubble.transform.GetComponent<MessageFeedbackAnimator>().Init(auth.CurrentUser.UserId, botId, messageRef.Id);
+        //if (isUser)
+        //    bubble.transform.GetComponent<MessageFeedbackAnimator>().Init(auth.CurrentUser.UserId, botId, messageRef.Id);
 
         Dictionary<string, object> messageData = null;
         if (isUser)
